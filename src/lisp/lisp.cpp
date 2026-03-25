@@ -1554,6 +1554,7 @@ void *mapcar(void *arg_list)
 
   if (stop)
   {
+    PtrRef::stack.m_size=old_ptr_son;
     free(arg_on);
     return NULL;
   }
@@ -1677,8 +1678,8 @@ void *concatenate(void *prog_list)
       default : ;     // already checked for, but make compiler happy
     }
       }
-      free(str_eval);
       PtrRef::stack.m_size=old_ptr_stack_start;   // restore pointer GC stack
+      free(str_eval);
       *s=0;
       ret=st;
     }
