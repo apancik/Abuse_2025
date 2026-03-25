@@ -154,20 +154,20 @@ LObject *Lisp::CollectObject(LObject *x)
         ((LRedirect *)x)->m_type = L_COLLECTED_OBJECT;
         ((LRedirect *)x)->m_ref = ret;
     }
-    else
+    else if ((uint8_t *)x < collected_start || (uint8_t *)x >= collected_end)
     {
-        // Still need to remap cons_cells lying outside of space, for
-        // instance on the stack.
-        // for (LObject *cell = NULL; x; cell = x, x = CDR(x))
-        // {
-        //     if (item_type(x) != L_CONS_CELL)
-        //     {
-        //         if (cell)
-        //             CDR(cell) = CollectObject(CDR(cell));
-        //         break;
-        //     }
-        //     CAR(x) = CollectObject(CAR(x));
-        // }
+        // Remap cons cells lying outside of the collected space whose
+        // CAR/CDR pointers reference objects inside the collected space.
+        for (LObject *cell = NULL; x; cell = x, x = CDR(x))
+        {
+            if (item_type(x) != L_CONS_CELL)
+            {
+                if (cell)
+                    CDR(cell) = CollectObject(CDR(cell));
+                break;
+            }
+            CAR(x) = CollectObject(CAR(x));
+        }
     }
 
     --gcdepth;
